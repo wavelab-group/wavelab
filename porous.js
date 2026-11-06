@@ -124,7 +124,9 @@ const startExplorer = () => {
     const demoC = [0, 0.3, 0, 0, 0], demoR0 = 0.31;       // illustrative shape: c2 = 0.3 only
     el('defs', {}, svg).innerHTML =
       '<marker id="px-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">' +
-      '<path d="M0 0L10 5L0 10z" fill="currentColor"/></marker>';
+      '<path d="M0 0L10 5L0 10z" fill="currentColor"/></marker>' +
+      '<marker id="px-arrow-h" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="4.2" markerHeight="4.2" orient="auto-start-reverse">' +
+      '<path d="M0 0L10 5L0 10z" fill="#1f5fa8"/></marker>';
 
     const cells = [X0, X0 + S];
     for (const x of cells) el('rect', { x, y: Y0, width: S, height: S, class: 'px-s-solid' }, svg);
@@ -158,10 +160,26 @@ const startExplorer = () => {
     el('path', { d: `M${cx + ar} ${cy} A${ar} ${ar} 0 0 0 ${cx + ar * Math.cos(ph)} ${cy - ar * Math.sin(ph)}`, class: 'px-s-arc' }, svg);
     label(cx + 31, cy - 12, '\\phi', 'px-s-rt px-s-small');
 
-    // h: between the reference circles of neighbouring cells
-    const hx1 = cx + r0, hx2 = X0 + S + S / 2 - r0, hy = cy + 0;
-    el('line', { x1: hx1, y1: hy, x2: hx2, y2: hy, class: 'px-s-h', 'marker-start': 'url(#px-arrow)', 'marker-end': 'url(#px-arrow)' }, svg);
-    label((hx1 + hx2) / 2 + 16, hy - 18, 'h', 'px-s-ht');   // offset from the cell-boundary line
+    // h: shortest distance between the actual pore boundaries r(φ) of neighbouring cells
+    const boundary = centreX => {
+      const pts = [];
+      for (let i = 0; i < 720; i++) {
+        const p = (i / 720) * 2 * Math.PI, r = radius(p, demoC, demoR0) * S;
+        pts.push([centreX + r * Math.cos(p), cy - r * Math.sin(p)]);
+      }
+      return pts;
+    };
+    const left = boundary(cx), right = boundary(X0 + S + S / 2);
+    let best = [Infinity, null, null];
+    for (const a of left) {
+      for (const b of right) {
+        const d = (a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2;
+        if (d < best[0]) best = [d, a, b];
+      }
+    }
+    const [, hA, hB] = best;
+    el('line', { x1: hA[0], y1: hA[1], x2: hB[0], y2: hB[1], class: 'px-s-h', 'marker-start': 'url(#px-arrow-h)', 'marker-end': 'url(#px-arrow-h)' }, svg);
+    label((hA[0] + hB[0]) / 2 + 14, (hA[1] + hB[1]) / 2 - 18, 'h', 'px-s-ht');   // offset from the cell-boundary line
 
     // a: width of one cell
     const ay = Y0 + S + 22;
