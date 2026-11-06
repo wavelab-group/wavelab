@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Interactive explorer for porous metamaterials: tune the pore shape and see the unit cell and its band structure.">
+  <meta name="theme-color" content="#315338">
+  <title>Porous Metamaterial Explorer | WAVE Lab | Montana Tech</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="script.js" defer></script>
+  <script>window.MathJax = { startup: { typeset: false }, svg: { fontCache: 'none' } };</script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.min.js" defer></script>
+  <script src="data/circular_bands.js" defer></script>
+  <script src="porous.js" defer></script>
+</head>
+<body>
+
+  <a href="#main" class="skip-link">Skip to content</a>
+
+  <!-- ============ HEADER ============ -->
+  <header class="site-header" id="top">
+    <div class="container nav-wrap">
+
+      <div class="brand-group">
+        <a class="brand" href="index.html" aria-label="WAVE Lab home">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 56 56"><path d="M4 30 C10 30 10 13 17 13 S24 44 31 44 S38 20 45 20 S49 30 53 30" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round"/></svg>
+          </span>
+          <span class="brand-text"><strong>WAVE<span>LAB</span></strong></span>
+        </a>
+        <div class="brand-affiliation">
+          <a href="https://www.mtech.edu/" target="_blank" rel="noopener noreferrer">Montana Tech</a>
+          <span aria-hidden="true">&middot;</span>
+          <a href="https://www.mtech.edu/mechanical-engineering/" target="_blank" rel="noopener noreferrer">Mechanical Engineering</a>
+        </div>
+      </div>
+
+      <button class="menu-toggle" aria-label="Open navigation" aria-expanded="false" aria-controls="site-nav">
+        <span></span><span></span><span></span>
+      </button>
+
+      <nav class="site-nav" id="site-nav" aria-label="Main navigation">
+        <a href="index.html">Home</a>
+        <a href="research.html" class="active">Research</a>
+        <a href="people.html">People</a>
+        <a href="publications.html">Publications</a>
+        <a href="news.html">News</a>
+        <a href="opportunities.html">Join Us</a>
+      </nav>
+
+    </div>
+  </header>
+
+  <!-- ============ PAGE CONTENT ============ -->
+  <main id="main" class="px-page">
+    <div class="container">
+
+      <a class="px-back" href="research.html">&larr; Back to Research</a>
+
+      <header class="px-head">
+        <p class="px-eyebrow">Interactive tool</p>
+        <h1>Porous Metamaterial Dispersion Explorer</h1>
+        <p class="px-lead">Shape the pore with five Fourier coefficients and the ligament ratio <span data-tex="h/a">h/a</span>, and see the unit cell and its band structure update as you drag.</p>
+      </header>
+
+      <div class="px-grid">
+
+        <!-- ========== LEFT: controls, formula, schematic ========== -->
+        <div class="px-col">
+
+          <section class="px-panel px-o-controls" aria-labelledby="px-controls-title">
+            <div class="px-panel-head">
+              <h2 id="px-controls-title">Pore parameters</h2>
+              <button type="button" class="px-reset" id="px-reset">Reset</button>
+            </div>
+            <div class="px-sliders" id="px-sliders"><!-- built by porous.js --></div>
+          </section>
+
+          <section class="px-panel px-o-formula" aria-labelledby="px-formula-title">
+            <h2 id="px-formula-title">Pore boundary</h2>
+            <div class="px-formula" data-tex-display="r(\phi) = r_0\left[\,1 + \sum_{n=1}^{5} c_n \cos(4n\phi)\right]">r(φ) = r₀[1 + Σ cₙ cos(4nφ)]</div>
+            <p class="px-formula-note"><span data-tex="r_0 = (a-h)/2">r0 = (a − h)/2</span> &nbsp;·&nbsp; <span data-tex="h">h</span> = minimum ligament width between neighbouring circular pores &nbsp;·&nbsp; <span data-tex="a">a</span> = lattice constant</p>
+          </section>
+
+          <section class="px-panel px-o-schematic" aria-labelledby="px-schematic-title">
+            <h2 id="px-schematic-title">Geometry</h2>
+            <div class="px-schem-wrap" id="px-schem-wrap"><svg class="px-schematic" id="px-schematic" viewBox="0 0 440 270" role="img" aria-label="Schematic of two neighbouring unit cells marking the lattice constant a, the ligament width h, the reference radius r0, and the pore radius r at angle phi"></svg></div>
+          </section>
+
+        </div>
+
+        <!-- ========== RIGHT: shape, band structure, values ========== -->
+        <div class="px-col">
+
+          <div class="px-row">
+            <section class="px-panel px-o-shape" aria-labelledby="px-shape-title">
+              <h2 id="px-shape-title">Unit cell</h2>
+              <svg class="px-shape" id="px-shape" viewBox="0 0 300 300" role="img" aria-label="Porous material: grey solid with white pores, 3 by 3 cells, centre cell outlined"></svg>
+              <p class="px-status" id="px-status" role="status"></p>
+            </section>
+
+            <section class="px-panel px-o-band" aria-labelledby="px-band-title">
+              <h2 id="px-band-title">Band structure</h2>
+              <div class="px-band-wrap">
+                <svg class="px-band" id="px-band" role="img" aria-label="Band structure along Gamma, X, M, Gamma"></svg>
+                <div class="px-tip" id="px-tip" hidden></div>
+              </div>
+              <p class="px-band-note" id="px-band-note"></p>
+            </section>
+          </div>
+
+          <section class="px-panel px-o-values" aria-labelledby="px-values-title">
+            <h2 id="px-values-title">Current values</h2>
+            <dl class="px-values" id="px-values"><!-- filled by porous.js --></dl>
+          </section>
+
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="footer">
+    <div class="container footer-top">
+      <div>
+        <strong class="footer-brand">WAVE<span>LAB</span></strong>
+        <p>We design mechanical waves.</p>
+      </div>
+      <a href="#top" class="back-top">Back to top &uarr;</a>
+    </div>
+    <div class="container footer-bottom">
+      <span>&copy; <span id="year">2026</span> WAVE Lab · Montana Technological University</span>
+      <span>1300 West Park Street Butte, MT 59701. <a href="https://www.mtech.edu/">Montana Tech &nearrow;</a></span>
+    </div>
+  </footer>
+
+</body>
+</html>
